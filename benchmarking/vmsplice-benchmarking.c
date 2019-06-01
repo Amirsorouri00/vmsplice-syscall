@@ -167,7 +167,6 @@ int do_vmsplice(int fd, char **data)
 		// 	return error("poll");
 		written = vmsplice(fd, &iov[idx], 1, splice_flags);
 		printf("here[%d]: written=%d\n", page_counter, written);
-		// printf("here\n");
 
 		if (written <= 0)
 			return error("vmsplice");
@@ -183,7 +182,6 @@ int do_vmsplice(int fd, char **data)
 			iov[idx].iov_base += written;
 		}
 	}
-
 	return 0;
 }
 
@@ -196,14 +194,10 @@ int main(int argc, char *argv[])
 	if (check_output_pipe())
 		return usage(argv[0]);
     
-    
     char** buf = empty_allocator();
     fake_data_generator(buf);
 
-    unsigned long nr_segs = 1024/2;
-
-    printf("%s\n",buf[1]);
-    
+    printf("%s\n",buf[1]);    
     ssize_t nread = do_vmsplice(STDOUT_FILENO, buf);
     if (-1 == nread) {
         printf("errno = %d\n", errno);
