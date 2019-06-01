@@ -156,7 +156,7 @@ int do_vmsplice(int fd, char **data)
 		},
 	};
 	int written, idx = 0;
-
+    int nread = 0;
 	while (page_counter >= 0) {
 		/*
 		 * in a real app you'd be more clever with poll of course,
@@ -174,14 +174,18 @@ int do_vmsplice(int fd, char **data)
 		page_counter--;
 		if ((size_t) written >= iov[idx].iov_len) {
 			int extra = written - iov[idx].iov_len;
-
+            nread+=written;
 			iov[idx].iov_len = SPLICE_SIZE;
 			iov[idx].iov_base = data[page_counter];
 		} else {
+            nread+=written;
 			iov[idx].iov_len -= written;
 			iov[idx].iov_base += written;
 		}
 	}
+
+    if(nread < 0)
+        return -1;
 	return 0;
 }
 
