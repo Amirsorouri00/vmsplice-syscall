@@ -120,7 +120,7 @@ void fake_data_generator(char** container){
 
 static int usage(char *name)
 {
-	fprintf(stderr, "%s: [-c(lear)] [-u(nalign)] [-g(ift)]| ...\n", name);
+	fprintf(stderr, "%s: [-u(nalign)] [-g(ift)]| ...\n", name);
 	return 1;
 }
 
