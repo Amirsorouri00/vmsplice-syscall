@@ -13,9 +13,7 @@
 #define SPLICE_SIZE  1024
 #define K_MULTIPLY   2  
 
-static int do_clear;
 static int align_mask = 65535;
-static int force_unalign;
 static int splice_flags;
 
 static inline int error(const char *n)
@@ -184,8 +182,9 @@ int do_vmsplice(int fd, char **data)
 		}
 	}
 
-    if(nread < 0)
+    if(nread < 0){
         return -1;
+    }
 	return 0;
 }
 
