@@ -1,13 +1,12 @@
 #define _GNU_SOURCE
+#include <sys/stat.h>
+#include <sys/uio.h>
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <sys/uio.h>
 #include <time.h>    // time()
 
 #define SPLICE_SIZE  1024
@@ -185,7 +184,7 @@ int do_vmsplice(int fd, char **data)
     if(nread < 0){
         return -1;
     }
-	return 0;
+	return nread;
 }
 
 
