@@ -13,6 +13,7 @@
 
 static int align_mask = 65535;
 static int splice_flags;
+clock_t start, end;
 
 
 static int parse_options(int argc, char *argv[])
@@ -64,7 +65,10 @@ int do_vmsplice(int fd, char **data)
 		// if (poll(&pfd, 1, -1) < 0)
 		// 	return error("poll");
 		written = svmsplice(fd, &iov[idx], 1, splice_flags);
-		printf("here[%d]: written=%d\n", page_counter, written);
+		
+		// if(page_counter%20 == 0)
+		// 	printf("here[%d]: nread=%d\n", page_counter, nread);
+
 
 		if (written <= 0)
 			return error("vmsplice");
@@ -76,6 +80,7 @@ int do_vmsplice(int fd, char **data)
 			iov[idx].iov_len = SPLICE_SIZE;
 			iov[idx].iov_base = data[page_counter];
 		} else {
+			// printf("here");
             nread+=written;
 			iov[idx].iov_len -= written;
 			iov[idx].iov_base += written;
@@ -92,28 +97,67 @@ int main(int argc, char *argv[])
 {   
     if (parse_options(argc, argv) < 0)
 		return usage(argv[0]);
-
-	// if (check_output_pipe())
-	// 	return usage(argv[0]);
     
-	char** data = initializer();
-	char** data1 = empty_allocator();
-
-
-	int pip[2];
+	ssize_t nread;
+	char* name;
+	int pip[2], fd[2];
 	if (pipe(pip) < 0) 
         exit(1); 
+	if (pipe(fd) < 0) 
+		exit(1); 
 
-    printf("%s\n",data[0]);    
-    ssize_t nread = do_vmsplice(pip[1], data);
-    ssize_t nread2 = do_vmsplice(pip[0], data1);
-    printf("%s\n",data1[0]);    
+	pid_t   childpid;
+	if((childpid = fork()) == -1)
+	{
+		perror("fork");
+		exit(1);
+	}
+	if(childpid == 0)
+	{
+		/* Child process closes up input side of pipe */
+		name = "child";
+		close(pip[0]);
+		close(fd[0]);
 
+		char** data = initializer();
 
-    printf("%ld\n", nread);
-    printf("%ld\n", nread2);
+		/* Send "string" through the output side of pipe */
+		start = clocker(0, name);   
+		size_printer(name);
+		nread = do_vmsplice(pip[1], data);
+		end = clocker(1, name);
+    	// printf("in child: number of written into the pipe = %ld\n", nread);
 
-    free_allocator(data1);
+		double result = time_calc(end, start, name);
+		write(fd[1], &result, sizeof(start));
+	    
+		free_allocator(data);
+		exit(0);
+	}
+	else
+	{
+		/* Parent process closes up output side of pipe */
+		close(fd[1]);
+		close(pip[1]);
+		name = "parent";
+
+		char** data1 = empty_allocator();
+
+		start = clocker(0, name);   
+		size_printer(name);
+		nread = do_vmsplice(pip[0], data1);
+		end = clocker(1, name);
+	    printf("in parent: number of reads from the pipe = %ld\n", nread);
+
+		double res;
+		double result = time_calc(end, start, name);
+		read(fd[0], &res, sizeof(start));
+		printf("---------------------------------------------\n");
+		printf("time to write and read into the pipe by vmsplice = %f\n", res + result);
+
+	    free_allocator(data1);
+		exit(0);
+	}
     
     return 0;
 }

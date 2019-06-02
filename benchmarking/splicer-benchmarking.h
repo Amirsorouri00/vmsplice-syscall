@@ -24,7 +24,7 @@
 
 
 #define SPLICE_SIZE  1024
-#define K_MULTIPLY   2  
+#define K_MULTIPLY   20000 
 
 
 #if defined(__i386__)
@@ -69,6 +69,8 @@
 #define SPLICE_F_UNMAP	(0x10)	/* undo vmsplice map */
 #endif
 
+static int clock_counter;
+clock_t start, end;
 
 
 //  .d8888b.   .d88888b.  888b     d888 888b     d888  .d88888b.  888b    888  .d8888b.  
@@ -80,6 +82,7 @@
 // Y88b  d88P Y88b. .d88P 888   "   888 888   "   888 Y88b. .d88P 888   Y8888 Y88b  d88P 
 //  "Y8888P"   "Y88888P"  888       888 888       888  "Y88888P"  888    Y888  "Y8888P"  
                                                                                       
+
 
 static inline int error(const char *n)
 {
@@ -125,6 +128,37 @@ static inline void test_string_askii()
     int Z = 'Z';
     printf("a = %d, A = %d, z = %d, Z = %d\n", a,A,z,Z);
     return;
+}
+
+static inline double time_calc(clock_t en, clock_t st, char* str){
+    double cpu_time_used = ((double) (en - st)) / CLOCKS_PER_SEC;
+    printf("in %s, time_calc: %f\n", str, cpu_time_used);
+    return cpu_time_used;
+}
+
+// static inline void clock_init(){
+//     start = (clock_t*) malloc(1);
+//     end = (clock_t*) malloc(1);
+//     clock_counter = (int*) malloc(1);
+// }
+
+static inline clock_t clocker(int cnt, char* str)
+{   
+    if(cnt == 0){
+        start = clock();
+        printf("in %s: started: %f\n", str, (double)start);
+        return start;
+    }
+    else{
+        end = clock();
+        printf("in %s:finished: %f\n", str, (double)end);
+        return end;
+    }
+}
+
+static inline void size_printer(char* str){
+    printf("int %s, size of data is: %d*%d\n", str, K_MULTIPLY, SPLICE_SIZE);
+	printf("--------------------------------------------------------------------\n");
 }
 
 /**
@@ -190,6 +224,8 @@ void k_generator(char* chars){
 }
 
 char** empty_allocator(){
+    // clock_init();
+
     char** buf = (char**) malloc(K_MULTIPLY);
 
     for(int i = 0; i < K_MULTIPLY ;i++)
