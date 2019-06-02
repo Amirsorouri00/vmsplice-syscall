@@ -3,4 +3,4 @@
 
 #### This is how it runs:
         # make
-        # ./vmsplice-benchmarking -{u, g} | cat
+        # ./vmsplice-benchmarking -{u, g}
