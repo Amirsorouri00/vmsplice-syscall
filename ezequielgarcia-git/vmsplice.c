@@ -43,8 +43,8 @@ int do_vmsplice(int fd, void *b1, void *b2, int len)
 		 * here we are basically just blocking on output room and
 		 * not using the free time for anything interesting.
 		 */
-		if (poll(&pfd, 1, -1) < 0)
-			return error("poll");
+		// if (poll(&pfd, 1, -1) < 0)
+		// 	return error("poll");
 		printf("here\n");
 		written = svmsplice(fd, &iov[idx], 2 - idx, splice_flags);
 		printf("here\n");
