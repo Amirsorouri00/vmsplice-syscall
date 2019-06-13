@@ -14,6 +14,8 @@
 
 #include "../splicer-benchmarking.h"
 
+#define meg     1000000
+
 
 static int align_mask = 65535;
 static int splice_flags;
@@ -175,6 +177,8 @@ int main(int argc, char *argv[])
             printf("---------------------------------------------\n");
 
             result = time_calc(end, first_start, "realtime_calculation");
+	        printf("The frequency is eqals to(Mbps): %f .\n", (double)((2* K_MULTIPLY*SPLICE_SIZE)/(result*meg)));
+
 		}
 		else{
 			/* Parent process closes up output side of pipe */
